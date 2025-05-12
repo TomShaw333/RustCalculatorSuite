@@ -1,23 +1,24 @@
-## 🔥 Calculator Frontend
+# 🔥 Calculator Frontend
 
 This is the **GUI frontend** for a Rust-based calculator app. Built with [`egui`](https://github.com/emilk/egui) via [`eframe`](https://github.com/emilk/eframe), it offers a clean, interactive interface that supports multiple calculator modes.
 
-> This crate is designed to work with a separate `calculator-backend` crate, responsible for parsing and evaluating expressions.
+> This frontend is designed to work with the `calculator-backend` crate, which handles all expression parsing and evaluation.
 
 ---
 
-### ✨ Features
+## ✨ Features
 
 - **Basic Mode** – Arithmetic operations: `+`, `-`, `*`, `/`, `^`, `%`, `√`, `!`
-- **Scientific & Trigonometry Modes** – UI elements in place for future expansion
-- **Resizable UI panels** – Custom styles and layouts using `egui`
-- **Keyboard input support** – Press *Enter* or click the **Enter** button to calculate
-- **Clear button** – Instantly resets your input field
-- 🔌 **Connected to a backend** that handles all expression evaluation
+- **Scientific & Trigonometry Modes** – UI elements for advanced functions
+- **History Mode** – Displays past calculations and results
+- **Resizable UI Panels** – Custom styles and layouts using `egui`
+- **Keyboard Input Support** – Press *Enter* or click the **Enter** button to calculate
+- **Clear Button** – Instantly resets your input field
+- 🔌 **Backend Integration** – Delegates expression evaluation to the `calculator-backend` crate
 
 ---
-
 ### 📦 Project Structure
+This repository contains both the **backend** and **frontend** components of a Rust-based calculator application. The project demonstrates Rust-C FFI integration for backend calculations and a GUI frontend built with `egui`.
 
 ```
 calculator-frontend/
@@ -29,17 +30,26 @@ calculator-frontend/
 
 ---
 
-### 🚀 Getting Started
+---
 
-Make sure you have Rust installed.
+## 🚀 Getting Started
 
-1. Clone this repository
-2. Ensure the [`calculator-backend`](https://crates.io/crates/calculator-backend) crate is available and properly linked
-3. Run the application:
+### Prerequisites
 
-```bash
-cargo run main
-```
+- Rust (latest stable version)
+- The `calculator-backend` crate must be available and properly linked
+
+### Installation
+
+1. Clone this repository:
+   ```
+   git clone https://github.com/your-repo/Rust-Interface-Wrappers-Spring-25.git
+   cd Rust-Interface-Wrappers-Spring-25/calculator-frontend
+2. Run the application:
+
+    ```
+    cargo run 
+    ```
 
 ---
 
@@ -54,7 +64,7 @@ cargo run main
 
 ### 🛠️ Under the Hood
 
-- The main app is defined in [`gui.rs`](src/gui.rs), implementing the `eframe::App` trait
+- The main app is defined in [`lib.rs`](src/lib.rs), implementing the `eframe::App` trait
 - Expression processing is delegated to the backend via `calculate_expression(&self.input_value)`
 - The main entry point is in [`main.rs`](src/bin/main.rs), where the window is sized and initialized
 
@@ -65,13 +75,13 @@ cargo run main
 ```toml
 [dependencies]
 eframe = "0.31.1"
-calculator-backend = "0.1.2"
+calculator-backend = "0.1.12"
 ```
 
 ---
 
 ### 🧭 To-Do
 
-- Implement logic for Scientific and Trigonometric functions
-- Handle errors from backend more gracefully
-- Add support for keyboard shortcuts and history
+- Improve error handling for backend responses
+- Add support for keyboard shortcuts and history navigation
+- Enhance UI styling and responsiveness

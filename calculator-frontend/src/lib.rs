@@ -8,7 +8,6 @@ use egui::{Frame, Margin, Color32, TextEdit, Vec2, FontId, CornerRadius, RichTex
 #[derive(PartialEq)]
 enum Mode {
     Basic,
-    Scientific,
     Trigonometry,
     History,
 }
@@ -80,7 +79,7 @@ impl eframe::App for CalcGUI {
                     bottom: 10,
                 })
                 .outer_margin(Margin{
-                    left: MENU_INDENT +1,
+                    left: 61,
                     top: 0,
                     right: 0,
                     bottom: 0,
@@ -89,7 +88,6 @@ impl eframe::App for CalcGUI {
                 .show(ui, |ui| {
                     ui.horizontal(|ui| {
                         ui.radio_value(&mut self.selected_mode, Mode::Basic, "Basic");
-                        ui.radio_value(&mut self.selected_mode, Mode::Scientific, "Sci");
                         ui.radio_value(&mut self.selected_mode, Mode::Trigonometry, "Trig");
                         ui.radio_value(&mut self.selected_mode, Mode::History, "Hist");
                     });
@@ -103,15 +101,15 @@ impl eframe::App for CalcGUI {
                         Frame::group(ui.style())
                             .fill(Color32::from_rgb(20, 20, 20))
                             .inner_margin(Margin {
-                                left: 100,
+                                left: 75,
                                 top: 25,
-                                right: 100,
+                                right: 75,
                                 bottom: 25,
                             })
                             .outer_margin(Margin{
-                                left: MENU_INDENT,
+                                left: 60,
                                 top: 0,
-                                right: 0,
+                                right: 20,
                                 bottom: 0,
                             })
                             .corner_radius(CornerRadius {
@@ -151,59 +149,12 @@ impl eframe::App for CalcGUI {
                                         self.input_value.push_str("ans");
                                     }
                                 });
-                            });
-                    }
-
-                    Mode::Scientific => {
-                        Frame::group(ui.style())
-                            .fill(Color32::from_rgb(20, 20, 20))
-                            .inner_margin(Margin {
-                                left: 100,
-                                top: 25,
-                                right: 100,
-                                bottom: 25,
-                            })
-                            .outer_margin(Margin{
-                                left: MENU_INDENT,
-                                top: 0,
-                                right: 0,
-                                bottom: 0,
-                            })
-                            .corner_radius(CornerRadius {
-                                nw: 0, 
-                                ne: 0, 
-                                sw: 10,  
-                                se: 10,  
-                            })
-                            .stroke(egui::Stroke::new(1.0, Color32::LIGHT_GREEN))
-                            .show(ui, |ui| {
-                                //ui.label("Basic Mode Panel");
                                 ui.horizontal(|ui| {
-                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("z")).clicked() {
-                                        //self.input_value.push()
+                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("log")).clicked() {
+                                        self.input_value.push_str("log")
                                     }
-                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("y")).clicked() {
-                                        //self.input_value.push()
-                                    }
-                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("x")).clicked() {
-                                        //self.input_value.push()
-                                    }
-                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("w")).clicked() {
-                                        //self.input_value.push()
-                                    }
-                                });
-                                ui.horizontal(|ui| {
-                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("v")).clicked() {
-                                        //self.input_value.push()
-                                    }
-                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("u")).clicked() {
-                                        //self.input_value.push()
-                                    }
-                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("t")).clicked() {
-                                        //self.input_value.push()
-                                    }
-                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("s")).clicked() {
-                                        //self.input_value.push()
+                                    if ui.add_sized(Vec2::new(20.0, 20.0), egui::Button::new("ln")).clicked() {
+                                        self.input_value.push_str("ln")
                                     }
                                 });
                             });
@@ -213,16 +164,16 @@ impl eframe::App for CalcGUI {
                         Frame::group(ui.style())
                             .fill(Color32::from_rgb(20, 20, 20))
                             .inner_margin(Margin {
-                                left: 100,
+                                left: 75,
                                 top: 25,
-                                right: 100,
+                                right: 40,
                                 bottom: 25,
                             })
                             .outer_margin(Margin{
-                                left: MENU_INDENT,
+                                left: 60,
                                 top: 0,
                                 right: 0,
-                                bottom: 0,
+                                bottom: 100,
                             })
                             .corner_radius(CornerRadius {
                                 nw: 0, 

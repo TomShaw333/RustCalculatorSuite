@@ -9,6 +9,22 @@ mod tests {
         let result = calculate_expression(data, &mut history);
         assert!(result.success, "Failed to calculate expression: {}", description);
         assert_eq!(result.result, expected_result, "Expression: {}", data);
+
+        // Use a tolerance for floating-point comparison
+        let tolerance = match expected_result.abs() {
+            x if x > 1.0e50 => x * 1.0e-6,  // Large numbers need larger tolerance
+            x if x < 1.0e-50 && x > 0.0 => x * 1.0e-6,  // Tiny numbers need proportional tolerance
+            _ => 1.0e-9,  // Default tolerance for normal-sized numbers
+        };
+        
+        assert!(
+            (result.result - expected_result).abs() < tolerance,
+            "Expression: {}\nExpected: {}, Got: {}, Diff: {}",
+            data,
+            expected_result,
+            result.result,
+            (result.result - expected_result).abs()
+        );
     }
 
     #[test]
@@ -109,16 +125,47 @@ mod tests {
     }
 
     #[test]
-    fn test_sciencetific_notation() {
-    // Scientific notation negative
-        test_case("Scientific notation", 
-                "1.23e5 + 4.56e-7", 
-                123000.0);
+    fn test_scientific_notation() {
+        // Scientific notation with small positive exponent
+        test_case(
+            "Scientific notation with small positive exponent",
+            "1.23e5 + 4.56e-7",
+            123000.000000456,
+        );
 
-    // Scienctific notation positive
-        test_case("Scientific notation", 
-                "1.23e5 + 4.56e7", 
-                45723000.0);
+        // Scientific notation with large positive exponent
+        test_case(
+            "Scientific notation with large positive exponent",
+            "1.23e5 + 4.56e7",
+            45723000.0,
+        );
 
+        // Scientific notation with small negative exponent
+        test_case(
+            "Scientific notation with small negative exponent",
+            "1.23e-5 + 4.56e-7",
+            0.000012756,
+        );
+
+        // Scientific notation with large negative exponent
+        test_case(
+            "Scientific notation with large negative exponent",
+            "1.23e-5 - 4.56e-7",
+            0.000011844,
+        );
+
+        // Scientific notation with mixed positive and negative exponents
+        test_case(
+            "Scientific notation with mixed exponents",
+            "1.23e5 - 4.56e-7",
+             122999.999999544,
+        );
+
+        // Scientific notation with very large numbers
+        test_case(
+            "Scientific notation with very large numbers",
+            "1.23e100 + 4.56e99",
+            1.686e100,
+        );
     }
 }

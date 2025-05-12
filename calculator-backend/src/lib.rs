@@ -20,9 +20,11 @@ const FACTORIAL_ERROR: c_int = 8;
 const SQUARE_ROOT_ERROR: c_int = 9;
 const LOG_ERROR: c_int = 10;
 const LN_ERROR: c_int = 11;
+const TAN_INVALID_OPERATOR: c_int = 12;
+const INVALID_TRIG_OPERATOR: c_int = 13;
 
 /// Stores the result of the calculation
-/// 
+/// S
 /// # Fields
 /// 
 /// * `result_value`: The calculated result, a C-compatible double-precision floating-point number (`c_double`).
@@ -63,6 +65,8 @@ pub struct CCalculationResult {
 /// * `9` (`SQUARE_ROOT_ERROR`): "Square root error"
 /// * `10` (`LOG_ERROR`): "Log error"
 /// * `11` (`LN_ERROR`): "Natural logarithm error"
+/// * `12` (`TAN_INVALID_OPERATOR`): "Invalid operator for tangent"
+/// * `13` (`INVALID_TRIG_OPERATOR`): "Invalid trigonometric operator"
 /// * Any other value: "Unknown error"
 /// 
 pub fn get_error_str(error_code: c_int) -> &'static str {
@@ -96,42 +100,42 @@ pub struct CConversionResult {
     error_code: c_int,
 }
 
-/// Externally defined C functions for Reverse Polish Notation (RPN) calculations and conversions.
-/// 
-/// These functions are implemented in the C library and are exposed to Rust using the `extern "C"` block.
-/// 
-/// # Functions
-/// 
-/// ## `calculate_rpn`
-/// Evaluates a Reverse Polish Notation (RPN) expression and returns the result.
-/// 
-/// ### Arguments
-/// * `expr`: A pointer to a `CReversePolishExpression` struct, which contains the RPN expression to be evaluated.
-/// 
-/// ### Returns
-/// A `CCalculationResult` struct containing:
-/// * `result_value`: The calculated result as a `c_double`.
-/// * `error_code`: An integer (`c_int`) indicating the success or failure of the calculation.
-///     * `0` (`SUCCESS`) indicates success.
-///     * Other values indicate specific errors (e.g., `DIVISION_BY_ZERO`, `INVALID_OPERATOR`).
-/// 
-/// ## `convert_rpn_to_infix`
-/// Converts a Reverse Polish Notation (RPN) expression to an infix expression.
-/// 
-/// ### Arguments
-/// * `expr`: A pointer to a `CReversePolishExpression` struct, which contains the RPN expression to be converted.
-/// 
-/// ### Returns
-/// A `CConversionResult` struct containing:
-/// * `result_expression`: A fixed-size array of `c_char` representing the converted infix expression.
-/// * `error_code`: An integer (`c_int`) indicating the success or failure of the conversion.
-///     * `0` (`SUCCESS`) indicates success.
-///     * Other values indicate specific errors.
-/// 
-/// # Safety
-/// 
-/// These functions are marked as `unsafe` because they involve raw pointers and interaction with a C library.
-/// Ensure that the pointers passed to these functions are valid and properly aligned.
+// Externally defined C functions for Reverse Polish Notation (RPN) calculations and conversions.
+// 
+// These functions are implemented in the C library and are exposed to Rust using the `extern "C"` block.
+// 
+// # Functions
+// 
+// ## `calculate_rpn`
+// Evaluates a Reverse Polish Notation (RPN) expression and returns the result.
+// 
+// ### Arguments
+// * `expr`: A pointer to a `CReversePolishExpression` struct, which contains the RPN expression to be evaluated.
+// 
+// ### Returns
+// A `CCalculationResult` struct containing:
+// * `result_value`: The calculated result as a `c_double`.
+// * `error_code`: An integer (`c_int`) indicating the success or failure of the calculation.
+//     * `0` (`SUCCESS`) indicates success.
+//     * Other values indicate specific errors (e.g., `DIVISION_BY_ZERO`, `INVALID_OPERATOR`).
+// 
+// ## `convert_rpn_to_infix`
+// Converts a Reverse Polish Notation (RPN) expression to an infix expression.
+// 
+// ### Arguments
+// * `expr`: A pointer to a `CReversePolishExpression` struct, which contains the RPN expression to be converted.
+// 
+// ### Returns
+// A `CConversionResult` struct containing:
+// * `result_expression`: A fixed-size array of `c_char` representing the converted infix expression.
+// * `error_code`: An integer (`c_int`) indicating the success or failure of the conversion.
+//     * `0` (`SUCCESS`) indicates success.
+//     * Other values indicate specific errors.
+// 
+// # Safety
+// 
+// These functions are marked as `unsafe` because they involve raw pointers and interaction with a C library.
+// Ensure that the pointers passed to these functions are valid and properly aligned.
 extern "C" {
     pub fn calculate_rpn(expr: *const CReversePolishExpression) -> CCalculationResult;
     fn convert_rpn_to_infix(expr: *const CReversePolishExpression) -> CConversionResult;
@@ -336,6 +340,8 @@ pub fn get_error_message(error_code: c_int) -> &'static str {
         SQUARE_ROOT_ERROR => "Square root error",
         LOG_ERROR => "Log error",
         LN_ERROR => "Natural logarithm error",
+        TAN_INVALID_OPERATOR => "Invalid operator for tangent",
+        INVALID_TRIG_OPERATOR => "Invalid trigonometric operator",
         _ => "Unknown error"
     }
 }
@@ -395,13 +401,25 @@ pub struct Token {
 /// - Square root: `"sqrt"`
 /// - Logarithmic functions: `"log"` (base-10 logarithm), `"ln"` (natural logarithm)
 /// - Special constants or functions: `"ans"`
-fn classify_identifier(ident: &str) -> TokenType {
-    //Known function names
-    const OPERATORS_NAMES: &[&str] = &["sin", "cos", "tan", "sqrt", "arctan", "arcsin", "arccos", "ans", "log", "ln"];
-    if OPERATORS_NAMES.contains(&ident) {
-        TokenType::Operator
+fn classify_identifier(ident: &str, history: &History) -> TokenType {
+    if ident == "ans" {
+        // Always resolve `ans` to the last result
+        if let Some(_last_result) = history.get_last_result() {
+
+            TokenType::Operand
+        } else {
+            TokenType::Operand // Default to 0.0 if no previous result exists
+        }
     } else {
-        TokenType::Variable 
+        // Known operators
+        const OPERATORS_NAMES: &[&str] = &[
+            "sin", "cos", "tan", "arcsin", "arccos", "arctan", "sqrt", "log", "ln",
+        ];
+        if OPERATORS_NAMES.contains(&ident) {
+            TokenType::Operator
+        } else {
+            TokenType::Variable
+        }
     }
 }
 
@@ -553,6 +571,28 @@ pub fn tokenize(input: &str, history: &History) -> Vec<Token> {
                     }
                 }
 
+                // === Scientific Notation ===
+                if let Some(&'e') = chars.peek() {
+                    num_str.push(chars.next().unwrap()); // Consume e
+                    
+                    //Catch direction decimal is moving in
+                    if let Some(&next_c) = chars.peek() {
+                        if next_c == '-' || next_c == '+' {
+                            num_str.push(chars.next().unwrap());
+                        }
+
+                        //Consume the rest of the number
+                        while let Some(&next_c) = chars.peek() {
+                            if next_c.is_digit(10) {
+                                num_str.push(chars.next().unwrap());
+                            } else {
+                                break; 
+                            }
+
+                        }
+                    }
+                }
+
                 // Validate if number was formed
                 if is_numeric(&num_str) {
                     tokens.push(Token {
@@ -566,8 +606,12 @@ pub fn tokenize(input: &str, history: &History) -> Vec<Token> {
                 }
             }
 
-            'a' => {
+            // ==== Identifier (Variables or Functions) ===
+            // Original code only checked is_alphabetic(), let's add `|| a == '_'`
+             a if a.is_alphabetic() => {
                 let mut ident_str = String::new();
+                ident_str.push(chars.next().unwrap());
+
                 while let Some(&next_c) = chars.peek() {
                     if next_c.is_alphanumeric() {
                         ident_str.push(chars.next().unwrap());
@@ -577,48 +621,21 @@ pub fn tokenize(input: &str, history: &History) -> Vec<Token> {
                 }
 
                 if ident_str == "ans" {
-                    if let Some(last_result) = history.get_last_result() {
-                        tokens.push(Token {
-                            token_value: last_result.to_string(),
-                            token_type: TokenType::Operand,
-                        });
-                    } else {
-                        eprintln!("Warning: 'ans' used but no previous result available");
-                        tokens.push(Token {
-                            token_value: "0".to_string(),
-                            token_type: TokenType::Operand,
-                        });
-                    }
+                    // Replace `ans` with the last result from history
+                    let last_result = history.get_last_result().unwrap_or(0.0);
+                    tokens.push(Token {
+                        token_value: last_result.to_string(),
+                        token_type: TokenType::Operand,
+                    });
                 } else {
+                    let token_type = classify_identifier(&ident_str, history);
                     tokens.push(Token {
                         token_value: ident_str,
-                        token_type: TokenType::Variable,
+                        token_type,
                     });
                 }
             }
 
-            // ==== Identifier (Variables or Functions) ===
-            // Original code only checked is_alphabetic(), let's add `|| a == '_'`
-            a if a.is_alphabetic() || a == '_' => {
-                let mut ident_str = String::new();
-                ident_str.push(chars.next().unwrap()); //Consume first char
-
-                //Consume subsequence alphabetic chars, digits, or underscores
-                while let Some(&next_c) = chars.peek() {
-                    if next_c.is_alphanumeric() || next_c == '_' {
-                        ident_str.push(chars.next().unwrap());
-                    } else {
-                         break; //End of Variable or Operator
-                    }
-                }
-
-                //Classify as Function or Variable based on name
-                let token_type = classify_identifier(&ident_str); // Ensure classify_identifier exists and is spelled correctly
-                tokens.push(Token {
-                    token_value: ident_str, 
-                    token_type, 
-                });
-            }
 
             // == Unknown Character ===
             _ => {
@@ -646,8 +663,8 @@ pub fn get_precedence(op: &str) -> i32 {
         "+" | "-" => 1,
         "*" | "/" => 2,
         "^" => 3,
-        "!" | "√" | "log" | "ln" => 4, 
-        "sin"| "cos"| "tan"| "sqrt"| "arctan"| "arcsin"| "arccos" => 5,
+        "!" | "√" | "sqrt" | "log" | "ln" => 4, 
+        "sin"| "cos"| "tan" | "arctan"| "arcsin"| "arccos" => 5,
         _ => 0
     }
 }

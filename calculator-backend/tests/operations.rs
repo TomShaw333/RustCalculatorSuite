@@ -88,7 +88,7 @@ fn test_invalid_expressions() {
 
     let result = calculate_expression("√ + 5", &mut history);
     assert!(!result.success);
-    assert_eq!(result.message, "Stack underflow - invalid expression");
+    assert_eq!(result.message, "Invalid operator");
 
     let result = calculate_expression("5 ! +", &mut history);
     assert_eq!(result.message, "Stack underflow - invalid expression");

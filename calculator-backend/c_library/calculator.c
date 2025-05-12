@@ -23,7 +23,8 @@
 #define SQUARE_ROOT_INVALID_OPERATOR 9
 #define LOG_ERROR 10
 #define LN_ERROR 11
-
+#define TAN_INVALID_OPERATOR 12
+#define INVALID_TRIG_OPERATOR 13
 
 // Maximum size for expression and operator arrays
 #define MAX_STACK_SIZE 100
@@ -127,7 +128,7 @@ static double get_variable_value(const char* name, int* error_code) {
  * - Basic arithmetic: '+', '-', '*', '/', and '^' (power).
  * - Factorial: '!' (unary operator, only one operand is used).
  * - Square root: "sqrt" (unary operator).
- * - Trigonometric functions: "sin", "cos", "tan", "asin", "acos", "atan" (unary operators).
+ * - Trigonometric functions: "sin", "cos", "tan", "arcsin", "arccos", "arctan" (unary operators).
  * - Logarithmic functions:
  *   - "log" (base-10 logarithm, unary operator).
  *   - "ln" (natural logarithm, unary operator).
@@ -150,9 +151,9 @@ static bool is_operator(const char* token) {
         strcmp(token, "sin") == 0 ||
         strcmp(token, "cos") == 0 ||
         strcmp(token, "tan") == 0 ||
-        strcmp(token, "asin") == 0 ||
-        strcmp(token, "acos") == 0 ||
-        strcmp(token, "atan") == 0 ||
+        strcmp(token, "arcsin") == 0 ||
+        strcmp(token, "arccos") == 0 ||
+        strcmp(token, "arctan") == 0 ||
         strcmp(token, "log") == 0 ||
         strcmp(token, "ln") == 0 ||
         strcmp(token, "ans") == 0
@@ -274,11 +275,59 @@ static double apply_operator(const char* op, double a, double b, int* error_code
             return 0;
         }
         result = sqrt(a);
+        result = round_to_9_decimals(result);
         return result;
     }
 
     if (strcmp(op, "sin") == 0){
         result = sin(a);
+        result = round_to_9_decimals(result);
+        return result;
+    }
+
+    if (strcmp(op, "cos") == 0){
+        result = cos(a);
+        result = round_to_9_decimals(result);
+        return result;
+    }
+
+    if (strcmp(op, "tan") == 0) {
+        // Check for undefined values of tan (odd multiples of π/2)
+        if (fmod(fabs(a), M_PI) == M_PI / 2) {
+            *error_code = TAN_INVALID_OPERATOR;
+            printf("Undefined value for tan at odd multiples of π/2\n");
+            return 0;
+        }
+        result = tan(a);
+        result = round_to_9_decimals(result);
+        return result;
+    }
+
+    if (strcmp(op, "arcsin") == 0) {
+        if (a < -1 || a > 1) {
+            *error_code = INVALID_TRIG_OPERATOR;
+            printf("Invalid input for asin\n");
+            return 0;
+        }
+        result = asin(a);
+        result = round_to_9_decimals(result);
+        return result;
+    }
+    
+    if (strcmp(op, "arccos") == 0) {
+        if (a < -1 || a > 1) {
+            *error_code = INVALID_TRIG_OPERATOR;
+            printf("Invalid input for acos\n");
+            return 0;
+        }
+        result = acos(a);
+        result = round_to_9_decimals(result);
+        return result;
+    }
+    
+    if (strcmp(op, "arctan") == 0) {
+        result = atan(a);
+        result = round_to_9_decimals(result);
         return result;
     }
 
@@ -289,16 +338,18 @@ static double apply_operator(const char* op, double a, double b, int* error_code
             return 0;
         }
         result = log10(a);
+        result = round_to_9_decimals(result);
         return result;
     }
 
     if (strcmp(op, "ln") == 0) {  // Natural logarithm
         if (a <= 0) {
             *error_code = LN_ERROR;
-            printf("Logarithm error: ln of non-positive number\n");
+            printf("Natural logarithm error: ln of non-positive number\n");
             return 0;
         }
         result = log(a);
+        result = round_to_9_decimals(result);
         return result;
     }
     
@@ -390,7 +441,8 @@ CalculationResult evaluate_rpn(const ReversePolishExpression* rpn) {
         printf("Processing token: %s\n", token);
         
         if (is_operator(token)) {
-            if (token[0] == '!' || strcmp(token, "sqrt") == 0 || strcmp(token, "sin") == 0 || strcmp(token, "log") == 0 || strcmp(token, "ln") == 0) { 
+            if (token[0] == '!' || strcmp(token, "sqrt") == 0 || strcmp(token, "sin") == 0 || strcmp(token,"cos") == 0 || strcmp(token, "tan") == 0
+            || strcmp(token, "arcsin") == 0 || strcmp(token, "arccos") == 0 || strcmp(token, "arctan") == 0 || strcmp(token, "log") == 0 || strcmp(token, "ln") == 0) { 
                 if (stack_top < 0) {
                     printf("Operator without operand\n");
                     result.error_code = INVALID_OPERATOR;

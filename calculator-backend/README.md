@@ -1,14 +1,13 @@
 # Rust-Interface-Wrappers-Spring-25
 
-Rust Foreign Function Interface Wrapper Crate	 
+Rust Foreign Function Interface Wrapper Crate  
 RI: Daniel Dusharm ddusharm@asrcfederal.com
- 
+
 External bindings make the (computer) world go round. For example, Python AI/ML projects that use performance-critical or efficient libraries do so by leveraging foreign function interfaces (FFI) to call native code. This project demonstrates the development of a wrapper crate in Rust using `std::ffi` to expose the functionality of an external C library while ensuring type safety. Students will gain hands-on experience with Rust fundamentals such as memory safety, ownership, and FFI integration.
 
 ## Project Overview
 
 This project implements a calculator library that demonstrates Rust-C FFI integration. It consists of a C library for core calculations and a Rust wrapper providing a safe interface through a command-line interface (CLI).
-
 
 ### Key Features
 
@@ -18,7 +17,14 @@ This project implements a calculator library that demonstrates Rust-C FFI integr
 - Memory-safe FFI implementation
 - Robust error handling
 - Support for complex mathematical expressions
-- History saves all user input with answers or errors 
+- History saves all user input with answers or errors
+- Support for advanced mathematical functions:
+  - Trigonometric functions: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`
+  - Logarithmic functions: `log` (base-10), `ln` (natural logarithm)
+  - Factorial and square root operations
+  - Constants: `pi`, `e`
+- Scientific notation support for numbers
+- Conversion between RPN and infix notation
 
 ## Installation
 
@@ -27,7 +33,13 @@ This project implements a calculator library that demonstrates Rust-C FFI integr
 - C compiler (gcc/clang)
 - Cargo
 
-## Usage
+### Build Instructions
+1. Clone the repository:
+   git clone https://github.com/your-repo/Rust-Interface-Wrappers-Spring-25.git
+   cd Rust-Interface-Wrappers-Spring-25/caculator-frontend
+
+2. Build the rust code
+   cargo build
 
 ### Running the Application
 
@@ -60,16 +72,15 @@ This implementation aligns with the project goals in several ways:
    - Rust type system utilization
 
 ## Technical Details
-
-### Memory Management
-
+Memory Management
 The project handles memory safety through:
+
 - RAII principles in Rust
 - Careful C memory allocation/deallocation
 - Smart pointer usage
 - Automatic cleanup on scope exit
 
-### Error Handling
+**Error Handling**
 
 Error types include:
 - Division by zero
@@ -77,9 +88,24 @@ Error types include:
 - Stack underflow
 - Memory errors
 - Undefined variables
-- Stack maximum
-- Expretion Length Maximum
+- Stack maximum exceeded
+- Expression length maximum exceeded
 - Factorial errors
+- Square root errors
+- Logarithmic errors (log and ln)
+- Type Conversions
+- Handles conversions between:
+- Rust strings ↔ C strings
+- Rust numbers ↔ C numbers
+- Complex data structures
+- Error codes
+### Memory Management
+
+The project handles memory safety through:
+- RAII principles in Rust
+- Careful C memory allocation/deallocation
+- Smart pointer usage
+- Automatic cleanup on scope exit
 
 ### Type Conversions
 
@@ -97,40 +123,40 @@ cargo test
 ### Run a specific test
 cargo test --test <test_name>
 
+### Test Coverage
+The project includes comprehensive test coverage for: 
+- Basic arithmetic operations
+- Advanced mathematical functions (e.g., trigonometric, logarithmic)
+- Error handling (e.g., division by zero, invalid operators)
+- History logging
+- RPN to infix conversion
+- Scientific notation
+- Edge cases (e.g., large expressions, deeply nested parentheses)
+
 ## Limitations and Future Work
 
 Current limitations:
 
-- Basic operator set
+- Limited support for user-defined variables
+- No support for custom functions
 
-Planned improvements:
-- Scientific notation parsing for negative numbers
-- Dynamic memory allocation
-- Additional mathematical functions
+Planned Improvements
+
+1. Additional Features
 - Variable support
-- Function definitions
+- User-defined functions
+- Dynamic memory allocation for large expressions
 
-### Additional Enhancements
+2. Performance Optimization
+- Memory allocation optimization
+- Parser performance improvements
+- Error handling efficiency
 
-1. **Additional Mathematical Functions**
-   - Trigonometric functions (sin, cos, tan)
-   - Logarithmic functions (ln, log)
-   - Constants (pi, e)
+3. Enhanced Testing
+- Add stress tests for large expressions
+- Add tests for Unicode handling
+- Add tests for edge cases in scientific notation
 
-2. **Expression Optimization**
-   - Constant folding
-   - Expression simplification
-   - Performance improvements
-
-### Testing Requirements
-
-1. **Test Coverage**
-   - Add unit tests for negative numbers
-   - Add tests for Unicode handling
-   - Add scientific notation tests
-   - Add stress tests for large expressions
-   - Add history testing with rezults and errors
-   - Add factorial testing with rezults and errors 
 
 ### Documentation Updates
 
